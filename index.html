@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="法考交付">
+<title>法考每日交付</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap');
+
+:root {
+–bg: #0f0e0c;
+–surface: #1a1814;
+–surface2: #232018;
+–border: #2e2b24;
+–border2: #3d3930;
+–gold: #c9a84c;
+–gold2: #e8c96a;
+–gold-dim: #7a6530;
+–text: #f0ead8;
+–text2: #a89e88;
+–text3: #6b6458;
+–red: #e05252;
+–amber: #d4893a;
+–blue: #5b8dd9;
+–green: #52a870;
+–red-bg: #2a1515;
+–amber-bg: #251a0e;
+–blue-bg: #0f1a2a;
+–green-bg: #0f2018;
+–sidebar-w: 260px;
+–radius: 12px;
+–radius-sm: 8px;
+}
+
+- { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+font-family: ‘Noto Serif SC’, Georgia, serif;
+background: var(–bg);
+color: var(–text);
+height: 100dvh;
+overflow: hidden;
+display: flex;
+font-size: 15px;
+line-height: 1.6;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+width: var(–sidebar-w);
+background: var(–surface);
+border-right: 1px solid var(–border);
+display: flex;
+flex-direction: column;
+flex-shrink: 0;
+padding: 0;
+overflow: hidden;
+}
+
+.sidebar-brand {
+padding: 28px 20px 20px;
+border-bottom: 1px solid var(–border);
+}
+.sidebar-brand-sub {
+font-size: 9px;
+letter-spacing: 3px;
+color: var(–gold-dim);
+font-family: monospace;
+text-transform: uppercase;
+margin-bottom: 6px;
+}
+.sidebar-brand-title {
+font-size: 18px;
+font-weight: 700;
+color: var(–gold);
+line-height: 1.2;
+}
+
+.sidebar-progress {
+padding: 16px 20px;
+border-bottom: 1px solid var(–border);
+}
+.progress-label {
+display: flex;
+justify-content: space-between;
+font-size: 11px;
+color: var(–text3);
+font-family: monospace;
+margin-bottom: 8px;
+}
+.progress-pct { color: var(–gold); font-weight: 700; }
+.progress-bar-bg {
+height: 4px;
+background: var(–border);
+border-radius: 2px;
+overflow: hidden;
+}
+.progress-bar-fill {
+height: 100%;
+background: linear-gradient(90deg, var(–gold-dim), var(–gold));
+border-radius: 2px;
+transition: width 0.4s ease;
+width: 0%;
+}
+
+.sidebar-nav {
+flex: 1;
+overflow-y: auto;
+padding: 12px 12px;
+display: flex;
+flex-direction: column;
+gap: 4px;
+}
+
+.nav-item {
+display: flex;
+align-items: center;
+gap: 12px;
+padding: 12px 14px;
+border-radius: var(–radius-sm);
+cursor: pointer;
+transition: all 0.15s;
+border: 1px solid transparent;
+position: relative;
+}
+.nav-item:hover { background: var(–surface2); }
+.nav-item.active {
+background: var(–surface2);
+border-color: var(–border2);
+}
+.nav-item.active::before {
+content: ‘’;
+position: absolute;
+left: 0; top: 20%; bottom: 20%;
+width: 2px;
+background: var(–gold);
+border-radius: 0 2px 2px 0;
+}
+.nav-icon {
+font-size: 16px;
+width: 24px;
+text-align: center;
+flex-shrink: 0;
+}
+.nav-label {
+font-size: 13px;
+font-weight: 600;
+color: var(–text2);
+}
+.nav-item.active .nav-label { color: var(–text); }
+.nav-badge {
+margin-left: auto;
+background: var(–gold-dim);
+color: var(–gold2);
+font-size: 10px;
+font-family: monospace;
+padding: 1px 6px;
+border-radius: 10px;
+}
+
+.sidebar-footer {
+padding: 16px 20px;
+border-top: 1px solid var(–border);
+display: flex;
+gap: 8px;
+}
+.btn-sm {
+flex: 1;
+padding: 8px;
+border-radius: var(–radius-sm);
+border: 1px solid var(–border2);
+background: none;
+color: var(–text2);
+font-size: 12px;
+font-family: inherit;
+cursor: pointer;
+transition: all 0.15s;
+text-align: center;
+}
+.btn-sm:hover { background: var(–surface2); color: var(–text); }
+.btn-sm.primary {
+background: var(–gold);
+color: var(–bg);
+border-color: var(–gold);
+font-weight: 700;
+}
+.btn-sm.primary:hover { background: var(–gold2); }
+
+/* ── MAIN ── */
+.main {
+flex: 1;
+overflow-y: auto;
+padding: 32px 36px 48px;
+scroll-behavior: smooth;
+}
+
+.page { display: none; animation: fadeIn 0.2s ease; }
+.page.active { display: block; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.page-header {
+margin-bottom: 28px;
+}
+.page-header-sub {
+font-size: 10px;
+letter-spacing: 3px;
+color: var(–gold-dim);
+font-family: monospace;
+text-transform: uppercase;
+margin-bottom: 6px;
+}
+.page-header-title {
+font-size: 26px;
+font-weight: 700;
+color: var(–text);
+}
+.page-header-desc {
+font-size: 13px;
+color: var(–text3);
+margin-top: 4px;
+}
+
+/* ── CARDS ── */
+.card {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: var(–radius);
+overflow: hidden;
+margin-bottom: 18px;
+}
+.card-header {
+padding: 12px 18px;
+border-bottom: 1px solid var(–border);
+display: flex;
+align-items: center;
+justify-content: space-between;
+}
+.card-header-label {
+font-size: 10px;
+letter-spacing: 2px;
+color: var(–gold);
+font-family: monospace;
+text-transform: uppercase;
+font-weight: 700;
+}
+.card-header-note { font-size: 11px; color: var(–text3); font-family: monospace; }
+.card-body { padding: 18px; }
+
+/* ── FORM ── */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid21 { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; }
+
+.field { margin-bottom: 14px; }
+.field:last-child { margin-bottom: 0; }
+.field label {
+display: block;
+font-size: 11px;
+color: var(–text3);
+font-family: monospace;
+letter-spacing: 1px;
+margin-bottom: 6px;
+}
+.field input, .field textarea, .field select {
+width: 100%;
+background: var(–surface2);
+border: 1px solid var(–border);
+border-radius: var(–radius-sm);
+padding: 10px 12px;
+color: var(–text);
+font-family: inherit;
+font-size: 14px;
+outline: none;
+transition: border-color 0.15s;
+-webkit-appearance: none;
+}
+.field input:focus, .field textarea:focus, .field select:focus {
+border-color: var(–gold-dim);
+}
+.field textarea {
+resize: vertical;
+min-height: 80px;
+line-height: 1.6;
+}
+.field input::placeholder, .field textarea::placeholder { color: var(–text3); }
+
+/* ── TABLE ── */
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th {
+padding: 10px 14px;
+text-align: left;
+font-size: 10px;
+letter-spacing: 1px;
+color: var(–text3);
+font-family: monospace;
+text-transform: uppercase;
+border-bottom: 1px solid var(–border);
+font-weight: 600;
+}
+.data-table td {
+padding: 12px 14px;
+border-bottom: 1px solid var(–border);
+color: var(–text2);
+vertical-align: top;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(–surface2); }
+
+/* ── TAGS ── */
+.tag {
+display: inline-flex;
+align-items: center;
+padding: 2px 9px;
+border-radius: 10px;
+font-size: 11px;
+font-family: monospace;
+font-weight: 700;
+}
+.tag-red { background: var(–red-bg); color: var(–red); }
+.tag-amber { background: var(–amber-bg); color: var(–amber); }
+.tag-blue { background: var(–blue-bg); color: var(–blue); }
+.tag-green { background: var(–green-bg); color: var(–green); }
+.tag-dim { background: var(–surface2); color: var(–text3); }
+
+/* ── ALERT ── */
+.alert {
+border-radius: var(–radius-sm);
+padding: 12px 14px;
+font-size: 13px;
+margin-bottom: 14px;
+line-height: 1.6;
+}
+.alert-warn { background: var(–red-bg); border-left: 3px solid var(–red); color: #f0a0a0; }
+.alert-tip { background: var(–green-bg); border-left: 3px solid var(–green); color: #90d0a8; }
+.alert-gold { background: var(–amber-bg); border-left: 3px solid var(–amber); color: #d4b080; }
+.alert-info { background: var(–blue-bg); border-left: 3px solid var(–blue); color: #90b8e8; }
+
+/* ── CHECKLIST ── */
+.check-item {
+display: flex;
+gap: 12px;
+align-items: flex-start;
+padding: 12px 14px;
+border-radius: var(–radius-sm);
+cursor: pointer;
+border: 1px solid var(–border);
+margin-bottom: 8px;
+transition: all 0.15s;
+background: var(–surface2);
+user-select: none;
+}
+.check-item:last-child { margin-bottom: 0; }
+.check-item.checked { border-color: var(–green); background: var(–green-bg); }
+.check-box {
+width: 22px; height: 22px;
+border-radius: 6px;
+border: 2px solid var(–border2);
+background: transparent;
+flex-shrink: 0;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 13px;
+color: var(–green);
+margin-top: 1px;
+transition: all 0.15s;
+}
+.check-item.checked .check-box { background: var(–green); border-color: var(–green); }
+.check-text { font-size: 14px; color: var(–text2); line-height: 1.5; padding-top: 2px; }
+.check-item.checked .check-text { color: var(–text); }
+
+/* ── GRADE ── */
+.grade-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.grade-btn {
+padding: 18px 12px;
+text-align: center;
+border: 2px solid var(–border);
+border-radius: var(–radius);
+cursor: pointer;
+background: var(–surface2);
+transition: all 0.15s;
+user-select: none;
+}
+.grade-letter { font-size: 32px; font-weight: 900; font-family: monospace; line-height: 1; margin-bottom: 6px; }
+.grade-label { font-size: 11px; color: var(–text3); }
+.grade-btn.sel-a { background: var(–green-bg); border-color: var(–green); }
+.grade-btn.sel-a .grade-letter { color: var(–green); }
+.grade-btn.sel-b { background: var(–amber-bg); border-color: var(–amber); }
+.grade-btn.sel-b .grade-letter { color: var(–amber); }
+.grade-btn.sel-c { background: var(–red-bg); border-color: var(–red); }
+.grade-btn.sel-c .grade-letter { color: var(–red); }
+
+/* ── ANTI CHEAT ── */
+.anti-toggle {
+width: 100%;
+background: var(–amber-bg);
+border: 1px solid var(–border2);
+border-radius: var(–radius-sm);
+padding: 12px 16px;
+color: #d4b080;
+font-family: inherit;
+font-size: 13px;
+font-weight: 600;
+cursor: pointer;
+text-align: left;
+margin-bottom: 0;
+transition: all 0.15s;
+}
+.anti-table { display: none; }
+.anti-table.open { display: block; }
+.anti-row {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 12px;
+padding: 10px 16px;
+border-top: 1px solid var(–border);
+font-size: 13px;
+}
+.anti-signal { color: var(–red); font-style: italic; }
+.anti-fix { color: var(–text2); }
+
+/* ── SCHED ── */
+.sched-item {
+display: flex;
+gap: 14px;
+padding: 13px 0;
+border-bottom: 1px solid var(–border);
+align-items: flex-start;
+}
+.sched-item:last-child { border-bottom: none; }
+.sched-time { font-family: monospace; font-size: 11px; color: var(–gold-dim); min-width: 90px; flex-shrink: 0; padding-top: 3px; }
+.sched-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+.sched-label { font-size: 14px; font-weight: 700; color: var(–text); margin-bottom: 2px; }
+.sched-desc { font-size: 12px; color: var(–text3); }
+
+/* ── WQ ── */
+.wq-card { background: var(–surface2); border: 1px solid var(–border); border-radius: var(–radius); padding: 16px; margin-bottom: 12px; }
+.wq-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.wq-title { font-size: 12px; font-family: monospace; color: var(–gold); letter-spacing: 2px; text-transform: uppercase; }
+.wq-remove { background: none; border: none; color: var(–text3); cursor: pointer; font-size: 16px; padding: 2px 6px; border-radius: 4px; }
+.wq-remove:hover { color: var(–red); background: var(–red-bg); }
+
+.add-btn {
+width: 100%;
+background: none;
+border: 1px dashed var(–border2);
+border-radius: var(–radius);
+padding: 12px;
+color: var(–text3);
+font-family: inherit;
+font-size: 13px;
+cursor: pointer;
+transition: all 0.15s;
+margin-bottom: 14px;
+}
+.add-btn:hover { border-color: var(–gold-dim); color: var(–gold); }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(–border2); border-radius: 4px; }
+
+/* ── SAVE FLASH ── */
+#saveFlash {
+position: fixed;
+top: 20px; right: 20px;
+background: var(–green);
+color: white;
+padding: 10px 18px;
+border-radius: var(–radius-sm);
+font-size: 13px;
+font-weight: 700;
+opacity: 0;
+transform: translateY(-8px);
+transition: all 0.25s;
+pointer-events: none;
+z-index: 999;
+}
+#saveFlash.show { opacity: 1; transform: translateY(0); }
+</style>
+
+</head>
+<body>
+
+<!-- SIDEBAR -->
+
+<div class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-sub">法考备考系统</div>
+    <div class="sidebar-brand-title">每日交付<br>工作单</div>
+  </div>
+
+  <div class="sidebar-progress">
+    <div class="progress-label">
+      <span>今日完成度</span>
+      <span class="progress-pct" id="pctText">0%</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <div class="sidebar-nav">
+    <div class="nav-item active" onclick="showPage('task')">
+      <div class="nav-icon">🎯</div>
+      <div class="nav-label">立任务</div>
+      <div class="nav-badge" id="badge-task">Step 1</div>
+    </div>
+    <div class="nav-item" onclick="showPage('content')">
+      <div class="nav-icon">📖</div>
+      <div class="nav-label">知识整理</div>
+      <div class="nav-badge">Step 2</div>
+    </div>
+    <div class="nav-item" onclick="showPage('quiz')">
+      <div class="nav-icon">✏️</div>
+      <div class="nav-label">错题复盘</div>
+      <div class="nav-badge">Step 3</div>
+    </div>
+    <div class="nav-item" onclick="showPage('check')">
+      <div class="nav-icon">✅</div>
+      <div class="nav-label">验收评级</div>
+      <div class="nav-badge">Step 4</div>
+    </div>
+    <div class="nav-item" onclick="showPage('schedule')">
+      <div class="nav-icon">🕐</div>
+      <div class="nav-label">每日时间表</div>
+    </div>
+    <div class="nav-item" onclick="showPage('anti')">
+      <div class="nav-icon">⚠️</div>
+      <div class="nav-label">反糊弄清单</div>
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <button class="btn-sm" onclick="resetAll()">清空</button>
+    <button class="btn-sm primary" onclick="saveData()">保存记录</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+
+<div class="main">
+
+  <!-- PAGE: 立任务 -->
+
+  <div class="page active" id="page-task">
+    <div class="page-header">
+      <div class="page-header-sub">Step 01 · 开始之前</div>
+      <div class="page-header-title">立今日任务</div>
+      <div class="page-header-desc">先写清楚交付目标，再开始学习</div>
+    </div>
+
+```
+<div class="card">
+  <div class="card-header">
+    <span class="card-header-label">今日委托事项</span>
+  </div>
+  <div class="card-body">
+    <div class="grid2">
+      <div class="field"><label>科目</label><input id="subject" placeholder="如：刑法" oninput="update()"></div>
+      <div class="field"><label>章节</label><input id="chapter" placeholder="如：共同犯罪" oninput="update()"></div>
+    </div>
+    <div class="field"><label>知识点</label><input id="topic" placeholder="如：共同犯罪的参与时间" oninput="update()"></div>
+    <div class="field"><label>本节解决的核心问题（一句话写清楚）</label><textarea id="coreQ" placeholder="如：行为人什么时候加入，能不能对前面已经发生的结果负责" oninput="update()"></textarea></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-header-label">今日必须交付的 4 样东西</span>
+    <span class="card-header-note">缺一不算完成</span>
+  </div>
+  <div class="card-body">
+    <div class="check-item" onclick="this.classList.toggle('checked');this.querySelector('.check-box').textContent=this.classList.contains('checked')?'✓':'';update()">
+      <div class="check-box"></div><div class="check-text">① 做题判断流程（至少 3 步，能直接用于做题）</div>
+    </div>
+    <div class="check-item" onclick="this.classList.toggle('checked');this.querySelector('.check-box').textContent=this.classList.contains('checked')?'✓':'';update()">
+      <div class="check-box"></div><div class="check-text">② 3 个易错点（命题人会在哪里骗你）</div>
+    </div>
+    <div class="check-item" onclick="this.classList.toggle('checked');this.querySelector('.check-box').textContent=this.classList.contains('checked')?'✓':'';update()">
+      <div class="check-box"></div><div class="check-text">③ 错题完整复盘（每题写原因，不能只写答案）</div>
+    </div>
+    <div class="check-item" onclick="this.classList.toggle('checked');this.querySelector('.check-box').textContent=this.classList.contains('checked')?'✓':'';update()">
+      <div class="check-box"></div><div class="check-text">④ 1 个仍不懂的具体问题（禁止写"待理解"，必须写卡在哪里）</div>
+    </div>
+  </div>
+</div>
+
+<div class="alert alert-gold">💡 今天不要问"我学完了吗"，只问"我今天交付了什么"。</div>
+```
+
+  </div>
+
+  <!-- PAGE: 知识整理 -->
+
+  <div class="page" id="page-content">
+    <div class="page-header">
+      <div class="page-header-sub">Step 02 · 学内容</div>
+      <div class="page-header-title">知识整理</div>
+      <div class="page-header-desc">用自己的白话写，不要抄书</div>
+    </div>
+
+```
+<div class="card">
+  <div class="card-header"><span class="card-header-label">规则整理</span><span class="card-header-note">白话，不抄书</span></div>
+  <div class="card-body">
+    <div class="field"><label>规则 1</label><textarea id="rule0" placeholder="用自己的话描述，能让不懂法的人也听懂" oninput="update()"></textarea></div>
+    <div class="field"><label>规则 2</label><textarea id="rule1" placeholder="用自己的话描述" oninput="update()"></textarea></div>
+    <div class="field"><label>规则 3</label><textarea id="rule2" placeholder="用自己的话描述" oninput="update()"></textarea></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-header-label">做题流程</span><span class="card-header-note">看到题目第一眼就知道从哪里入手</span></div>
+  <div class="card-body">
+    <div class="field"><label>第一步</label><input id="step0" placeholder="看___ → 判断___" oninput="update()"></div>
+    <div class="field"><label>第二步</label><input id="step1" placeholder="看___ → 判断___" oninput="update()"></div>
+    <div class="field"><label>第三步</label><input id="step2" placeholder="看___ → 判断___" oninput="update()"></div>
+    <div class="field"><label>结论</label><input id="step3" placeholder="最终如何定性" oninput="update()"></div>
+    <div class="alert alert-tip" style="margin-top:14px;margin-bottom:0;">✅ 标准：能在做题时直接调用，不用临时想</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-header-label">易错点</span><span class="card-header-note">命题人在哪里挖坑</span></div>
+  <div class="card-body">
+    <div class="field"><label>易错点 1</label><textarea id="mis0" placeholder="具体描述陷阱在哪里" oninput="update()"></textarea></div>
+    <div class="field"><label>易错点 2</label><textarea id="mis1" placeholder="具体描述陷阱在哪里" oninput="update()"></textarea></div>
+    <div class="field"><label>易错点 3</label><textarea id="mis2" placeholder="具体描述陷阱在哪里" oninput="update()"></textarea></div>
+  </div>
+</div>
+```
+
+  </div>
+
+  <!-- PAGE: 错题复盘 -->
+
+  <div class="page" id="page-quiz">
+    <div class="page-header">
+      <div class="page-header-sub">Step 03 · 做题验证</div>
+      <div class="page-header-title">错题复盘</div>
+      <div class="page-header-desc">每道错题必须写原因，不能只记答案</div>
+    </div>
+
+```
+<div id="wqContainer"></div>
+<button class="add-btn" onclick="addWQ()">＋ 添加错题</button>
+
+<div class="card">
+  <div class="card-header"><span class="card-header-label">未解决问题</span><span class="card-header-note">禁止写"待理解"</span></div>
+  <div class="card-body">
+    <div class="field">
+      <label>我卡在：（必须写清楚卡在哪句话）</label>
+      <textarea id="unsolved" placeholder='例："为什么这里不成立共同犯罪？我卡在：共同故意是否必须发生在实行行为前这一点。"' oninput="update()"></textarea>
+    </div>
+    <div class="field">
+      <label>明天优先解决：</label>
+      <textarea id="tomorrow" placeholder="具体问题，不许含糊" oninput="update()"></textarea>
+    </div>
+  </div>
+</div>
+```
+
+  </div>
+
+  <!-- PAGE: 验收评级 -->
+
+  <div class="page" id="page-check">
+    <div class="page-header">
+      <div class="page-header-sub">Step 04 · 收工之前</div>
+      <div class="page-header-title">验收评级</div>
+      <div class="page-header-desc">有一个不行 = 今天未完成</div>
+    </div>
+
+```
+<div class="card">
+  <div class="card-header"><span class="card-header-label">四项验收</span></div>
+  <div class="card-body">
+    <div class="check-item" id="v0" onclick="toggleVerify(0)"><div class="check-box" id="vc0"></div><div class="check-text">我能用一句话说出这个知识点解决什么问题</div></div>
+    <div class="check-item" id="v1" onclick="toggleVerify(1)"><div class="check-box" id="vc1"></div><div class="check-text">我能画出做题流程（至少三步）</div></div>
+    <div class="check-item" id="v2" onclick="toggleVerify(2)"><div class="check-box" id="vc2"></div><div class="check-text">我能在做题时直接调用这个流程</div></div>
+    <div class="check-item" id="v3" onclick="toggleVerify(3)"><div class="check-box" id="vc3"></div><div class="check-text">我留下了至少一个具体的未解决问题</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-header-label">今日评级</span></div>
+  <div class="card-body">
+    <div class="grade-row">
+      <div class="grade-btn" id="gradeA" onclick="setGrade('A')">
+        <div class="grade-letter" style="color:var(--text3)">A</div>
+        <div class="grade-label">全部交付</div>
+      </div>
+      <div class="grade-btn" id="gradeB" onclick="setGrade('B')">
+        <div class="grade-letter" style="color:var(--text3)">B</div>
+        <div class="grade-label">基本完成</div>
+      </div>
+      <div class="grade-btn" id="gradeC" onclick="setGrade('C')">
+        <div class="grade-letter" style="color:var(--text3)">C</div>
+        <div class="grade-label">需要返工</div>
+      </div>
+    </div>
+    <div id="alertC" class="alert alert-warn" style="display:none">⚠️ C级 = 明天必须先处理未解决问题，再推进新内容。</div>
+    <div id="alertA" class="alert alert-tip" style="display:none">🎉 今日交付完成！记得截图存档。</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-header-label">今日备注</span></div>
+  <div class="card-body">
+    <div class="field"><label>状态 / 发现 / 待确认</label><textarea id="remark" placeholder="自由记录" oninput="update()"></textarea></div>
+  </div>
+</div>
+```
+
+  </div>
+
+  <!-- PAGE: 时间表 -->
+
+  <div class="page" id="page-schedule">
+    <div class="page-header">
+      <div class="page-header-sub">参考 · 日程结构</div>
+      <div class="page-header-title">每日时间表</div>
+      <div class="page-header-desc">根据实际精力状态选择对应模式</div>
+    </div>
+
+```
+<div class="card">
+  <div class="card-header"><span class="card-header-label">普通日（精力正常）</span></div>
+  <div class="card-body">
+    <div class="sched-item">
+      <div class="sched-time">08:30–11:30</div>
+      <div class="sched-dot" style="background:var(--red)"></div>
+      <div><div class="sched-label">法考深度学习</div><div class="sched-desc">最高脑力时段。手机静音，不看实习消息。</div></div>
+    </div>
+    <div class="sched-item">
+      <div class="sched-time">11:30–12:00</div>
+      <div class="sched-dot" style="background:var(--amber)"></div>
+      <div><div class="sched-label">第一次处理实习</div><div class="sched-desc">批量确认任务，只确认不写长文档。</div></div>
+    </div>
+    <div class="sched-item">
+      <div class="sched-time">13:00–16:30</div>
+      <div class="sched-dot" style="background:var(--amber)"></div>
+      <div><div class="sched-label">线上实习集中产出</div><div class="sched-desc">追求一次交付合格，减少返工。</div></div>
+    </div>
+    <div class="sched-item">
+      <div class="sched-time">17:00–18:30</div>
+      <div class="sched-dot" style="background:var(--blue)"></div>
+      <div><div class="sched-label">法考刷题</div><div class="sched-desc">中脑力，专项题或套卷，每题写归因。</div></div>
+    </div>
+    <div class="sched-item">
+      <div class="sched-time">20:00–21:30</div>
+      <div class="sched-dot" style="background:var(--blue)"></div>
+      <div><div class="sched-label">错题复盘 + 填交付单</div><div class="sched-desc">低脑力。整理做题流程，填写本模板。</div></div>
+    </div>
+    <div class="sched-item">
+      <div class="sched-time">21:30–22:00</div>
+      <div class="sched-dot" style="background:var(--text3)"></div>
+      <div><div class="sched-label">考研英语 / 择校表</div><div class="sched-desc">轻任务。背 20 个单词，或维护择校信息。</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-header-label">实习很忙的日子</span></div>
+  <div class="card-body">
+    <div class="alert alert-warn" style="margin-bottom:14px;">只守一件事：法考 2 小时深度学习。其余全让给实习，考研直接跳过，不内疚。</div>
+    <div class="data-table" style="font-size:13px;">
+      <table class="data-table">
+        <tr><th>任务</th><th>最低量</th></tr>
+        <tr><td>法考深度学习</td><td><span class="tag tag-red">2 小时，不可低于此</span></td></tr>
+        <tr><td>刷题</td><td>30 道选择题</td></tr>
+        <tr><td>错题</td><td>复盘 5 道，写归因</td></tr>
+        <tr><td>考研</td><td>直接跳过，不内疚</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-header-label">完全被实习压垮的日子</span></div>
+  <div class="card-body">
+    <div class="alert alert-gold">保命线：刷 20 道选择题，10 分钟。保持题感不断，其他什么都不做。不是失败，是守住底线。</div>
+  </div>
+</div>
+```
+
+  </div>
+
+  <!-- PAGE: 反糊弄 -->
+
+  <div class="page" id="page-anti">
+    <div class="page-header">
+      <div class="page-header-sub">工具 · 随时查阅</div>
+      <div class="page-header-title">反糊弄清单</div>
+      <div class="page-header-desc">出现下面这些话，就说明开始糊弄了</div>
+    </div>
+
+```
+<div class="card">
+  <div class="card-body" style="padding:0;">
+    <table class="data-table">
+      <tr>
+        <th style="width:40%">出现这句话 = 开始糊弄</th>
+        <th>立刻改成这个问题</th>
+      </tr>
+      <tr><td><span style="color:var(--red);font-style:italic">"大概懂了"</span></td><td>我能不能用一句话讲给别人听？</td></tr>
+      <tr><td><span style="color:var(--red);font-style:italic">"先过吧"</span></td><td>这个点会不会直接影响做题？</td></tr>
+      <tr><td><span style="color:var(--red);font-style:italic">"好像是这样"</span></td><td>我能不能举一个正例、一个反例？</td></tr>
+      <tr><td><span style="color:var(--red);font-style:italic">"老师讲得太乱"</span></td><td>我自己能不能提炼成做题流程？</td></tr>
+      <tr><td><span style="color:var(--red);font-style:italic">"这个太细了"</span></td><td>它是考点、易错点，还是可放弃点？</td></tr>
+      <tr><td><span style="color:var(--red);font-style:italic">"我不会但先刷题"</span></td><td>先把不会点写成一个问题，再刷题验证</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-header-label">不懂点三步处理法</span></div>
+  <div class="card-body">
+    <div class="data-table">
+      <table class="data-table">
+        <tr><th>步骤</th><th>要做什么</th><th>示例</th></tr>
+        <tr><td><span class="tag tag-red">定位</span></td><td>我到底哪句话不懂</td><td>"为什么事后帮助不算共同犯罪？"</td></tr>
+        <tr><td><span class="tag tag-amber">翻译</span></td><td>把抽象话翻译成白话</td><td>"是不是因为犯罪已经结束，后面的人没参与实行行为？"</td></tr>
+        <tr><td><span class="tag tag-green">验收</span></td><td>用一个例子检验</td><td>"甲杀乙后，丙才来抛尸，丙不能对杀人负责。"</td></tr>
+      </table>
+    </div>
+    <div class="alert alert-warn" style="margin-top:14px;margin-bottom:0;">如果还是不懂：不许写"待理解"，要写成"我卡在___这一点"，然后放入明日优先任务。</div>
+  </div>
+</div>
+```
+
+  </div>
+
+</div><!-- /main -->
+
+<div id="saveFlash">✓ 已保存</div>
+
+<script>
+let verifyChecks = [false,false,false,false];
+let currentGrade = '';
+let wqCount = 0;
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const navMap = {task:0,content:1,quiz:2,check:3,schedule:4,anti:5};
+  document.querySelectorAll('.nav-item')[navMap[name]].classList.add('active');
+  document.querySelector('.main').scrollTo({top:0,behavior:'smooth'});
+}
+
+function addWQ() {
+  const i = wqCount++;
+  const div = document.createElement('div');
+  div.className = 'wq-card';
+  div.id = 'wq' + i;
+  div.innerHTML = `
+    <div class="wq-header">
+      <div class="wq-title">错题 ${i+1}</div>
+      <button class="wq-remove" onclick="document.getElementById('wq${i}').remove()">✕</button>
+    </div>
+    <div class="grid21">
+      <div class="field"><label>题号 / 来源</label><input id="wqNum${i}" placeholder="如：2023真题第8题" oninput="update()"></div>
+      <div class="field"><label>正确答案</label><input id="wqAns${i}" placeholder="A/B/C/D" oninput="update()"></div>
+    </div>
+    <div class="field"><label>我原来的判断</label><textarea id="wqMy${i}" placeholder="详细写出当时的思路" oninput="update()"></textarea></div>
+
+```
+<div class="field"><label>我错在哪一步</label><input id="wqWhy${i}" placeholder="概念错 / 流程错 / 例外没记住 — 选一个" oninput="update()"></div>
+<div class="field"><label>以后看到什么关键词要警惕</label><input id="wqKw${i}" placeholder="关键词 + 正确处理方式" oninput="update()"></div>`;
+```
+
+document.getElementById(‘wqContainer’).appendChild(div);
+}
+
+function toggleVerify(i) {
+verifyChecks[i] = !verifyChecks[i];
+const el = document.getElementById(‘v’+i);
+const box = document.getElementById(‘vc’+i);
+el.classList.toggle(‘checked’, verifyChecks[i]);
+box.textContent = verifyChecks[i] ? ‘✓’ : ‘’;
+checkAlerts();
+update();
+}
+
+function setGrade(g) {
+currentGrade = g;
+[‘A’,‘B’,‘C’].forEach(x => {
+const btn = document.getElementById(‘grade’+x);
+btn.className = ‘grade-btn’ + (x===g ? ’ sel-’+x.toLowerCase() : ‘’);
+});
+checkAlerts();
+update();
+}
+
+function checkAlerts() {
+document.getElementById(‘alertC’).style.display = currentGrade===‘C’ ? ‘block’ : ‘none’;
+document.getElementById(‘alertA’).style.display = (currentGrade===‘A’ && verifyChecks.every(Boolean)) ? ‘block’ : ‘none’;
+}
+
+function getFilledCount() {
+const ids = [‘subject’,‘chapter’,‘topic’,‘coreQ’,‘rule0’,‘rule1’,‘rule2’,‘step0’,‘step1’,‘step2’,‘step3’,‘mis0’,‘mis1’,‘mis2’,‘unsolved’,‘tomorrow’];
+return ids.filter(id => { const el=document.getElementById(id); return el&&el.value&&el.value.trim(); }).length;
+}
+
+function update() {
+const pct = Math.round(getFilledCount() / 16 * 100);
+document.getElementById(‘pctText’).textContent = pct + ‘%’;
+document.getElementById(‘progressFill’).style.width = pct + ‘%’;
+}
+
+function saveData() {
+const flash = document.getElementById(‘saveFlash’);
+flash.classList.add(‘show’);
+setTimeout(() => flash.classList.remove(‘show’), 2000);
+}
+
+function resetAll() {
+if (!confirm(‘确定清空今天的所有记录吗？’)) return;
+[‘subject’,‘chapter’,‘topic’,‘coreQ’,‘rule0’,‘rule1’,‘rule2’,‘step0’,‘step1’,‘step2’,‘step3’,‘mis0’,‘mis1’,‘mis2’,‘unsolved’,‘tomorrow’,‘remark’]
+.forEach(id => { const el=document.getElementById(id); if(el) el.value=’’; });
+verifyChecks=[false,false,false,false];
+[0,1,2,3].forEach(i => {
+document.getElementById(‘v’+i).classList.remove(‘checked’);
+document.getElementById(‘vc’+i).textContent=’’;
+});
+currentGrade=’’;
+[‘A’,‘B’,‘C’].forEach(x => document.getElementById(‘grade’+x).className=‘grade-btn’);
+document.getElementById(‘alertC’).style.display=‘none’;
+document.getElementById(‘alertA’).style.display=‘none’;
+document.getElementById(‘wqContainer’).innerHTML=’’;
+wqCount=0;
+document.querySelectorAll(’.check-item .check-box’).forEach(b => b.textContent=’’);
+document.querySelectorAll(’.check-item’).forEach(i => i.classList.remove(‘checked’));
+update();
+}
+
+// init
+addWQ();
+</script>
+
+</body>
+</html>
